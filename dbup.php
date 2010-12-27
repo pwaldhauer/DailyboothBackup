@@ -20,12 +20,14 @@
 *
 *****************************************************************************/
 
+$argc = $_SERVER['argc'];
+$argv = $_SERVER['argv'];
+
 if ($argc < 4) {
     echo "Usage: php dbup.php [-v] -u username -t directory\n";
     echo "Example: php dbup.php -v -u knuspermagier -t pics\n";
     exit(-1);
 }
-
 
 require_once 'DailyboothBackup.php';
 
@@ -33,35 +35,36 @@ $db = new DailyboothBackup();
 $directory = '';
 
 for ($i = 1; $i <= $argc; $i++) {
-    if ($argv[$i] == '-v') {
-        $db->setVerbose(true);
-        continue;
-    }
-
-    if ($argv[$i] == '-u') {
-        $db->setUsername($argv[$i + 1]);
-        continue;
-    }
-
-    if ($argv[$i] == '-t') {
-        $directory = $argv[$i + 1];
-        continue;
+    switch ($argv[$i]) {
+        case '-v':
+            $db->setVerbose(true);
+            break;
+    
+        case '-u':
+            $i++;
+            $db->setUsername($argv[$i]);
+            break;
+        
+        case '-t':
+            $i++;
+            $directory = $argv[$i];
+            break;
     }
 }
 
 $pages = $db->getPages();
 
-if(count($pages) == 0) {
-    die("Nothing found!\n");
+if (count($pages) == 0) {
+    $db->log('Nothing found!', true);
+    exit;
 }
 
 $pictures = $db->getPictures($pages);
 
 
-if(count($pictures) == 0) {
-    die("Nothing found!\n");
+if (count($pictures) == 0) {
+    $db->log('Nothing found!', true);
+    exit;
 }
 
-
 $db->downloadPictures($pictures, $directory);
-

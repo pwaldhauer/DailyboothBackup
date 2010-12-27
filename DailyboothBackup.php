@@ -34,8 +34,7 @@ class DailyboothBackup {
         $this->log('Getting pages...');
         $urls = array();
 
-        $page = 0;
-        while (true) {
+        for ($page = 0; true; $page++) {
             $url = $this->getPageUrl($page);
 
             $this->log('Trying page #' . $page);
@@ -55,8 +54,6 @@ class DailyboothBackup {
             for ($i = 0; $i < $count; $i++) {
                 $urls[] = $match[1][$i];
             }
-
-            $page++;
         }
 
         $this->log('Got ' . count($urls) . ' pages.');
@@ -82,7 +79,6 @@ class DailyboothBackup {
 
             $large[$match[2]] = $match[1];
 
-
             $this->log('Found one: ' . $match[1]);
         }
 
@@ -98,23 +94,21 @@ class DailyboothBackup {
      */
     public function downloadPictures(array $pictures, $directory) {
         if (!is_writable($directory)) {
-            die('Unable to write directory: ' . $directory);
+            $this->log('Unable to write directory: ' . $directory, true);
+            exit;
         }
 
         $this->log('Downloading images...');
 
         foreach ($pictures as $name => $url) {
-            $bin = file_get_contents($url);
-
-            $fp = fopen($directory . '/' . $name . '.jpg', 'wb');
-            fwrite($fp, $bin);
-            fclose($fp);
-
-            $this->log('Downloaded: ' . $name);
+            if (copy($url, $directory . '/' . $name . '.jpg')) {
+                $this->log('Downloaded: ' . $name);
+            } else {
+                $this->log('Download failed: ' . $name);
+            }
         }
-
-
-        $this->log('Download ready!');
+        
+        $this->log('Download complete!');
     }
 
     /**
@@ -122,7 +116,7 @@ class DailyboothBackup {
      * @param string $username the username
      */
     public function setUsername($username) {
-        $this->username = $username;
+        $this->username = (string) $username;
     }
 
     /**
@@ -133,15 +127,13 @@ class DailyboothBackup {
      * @param boolean $verbose verbosity mode
      */
     public function setVerbose($verbose) {
-        $this->verbose = $verbose;
+        $this->verbose = (bool) $verbose;
     }
 
-    private function log($str) {
-        if ($this->verbose == false) {
-            return;
+    private function log($str, $force = false) {
+        if ($this->verbose !== false && $force !== false) {
+            echo $str . "\n";
         }
-
-        echo $str . "\n";
     }
 
     private function getPageUrl($page) {
