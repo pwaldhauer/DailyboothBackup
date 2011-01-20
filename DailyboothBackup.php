@@ -29,6 +29,7 @@ class DailyboothBackup {
     /**
      * Parses the users stream and returns an array of urls of all picture pages.
      * @return array an array of urls to all picture pages 
+     * @deprecated
      */
     public function getPages() {
         $this->log('Getting pages...');
@@ -63,9 +64,46 @@ class DailyboothBackup {
     }
 
     /**
+     * Parses all pages of the given profile page for images
+     * and returns an array of picture urls for downloading
+     * @return array of picture urls
+    */
+    public function getPicturesFast() {
+	$this->log('Getting pictures (fast mode, yeah)...');
+	$urls = array();
+
+	for ($page = 0; true; $page++) {
+		$url = $this->getPageUrl($page);
+
+		$this->log('Trying page #'. $page);
+
+		$content = file_get_contents($url);
+
+		preg_match_all('#<div class=\'rounder\'.*><img src="(.*)"#', $content, $match);
+
+		$count = count($match[0]);
+            	
+		if ($count == 0) {
+                	$this->log('No more images here. Ready.');
+	                break;
+		}
+
+            	for ($i = 0; $i < $count; $i++) {
+             		$urls[] = str_replace('medium', 'large', $match[1][$i]);
+           	}
+
+	}
+
+	$this->log('Got '. count($urls) . ' pictures.');
+
+	return $urls;
+    }
+
+    /**
      * Parses the given picture pages for the urls of the original pictures.
      * @param array $pages a array containing urls of picture pages
      * @return array an array of urls to all large pictures
+     * @deprecated
      */
     public function getPictures(array $pages) {
         $this->log('Getting pictures...');
@@ -100,6 +138,8 @@ class DailyboothBackup {
         }
 
         $this->log('Downloading images...');
+
+	$pictures = array_reverse($pictures);
 
         foreach ($pictures as $name => $url) {
             if (copy($url, $directory . '/' . $name . '.jpg')) {

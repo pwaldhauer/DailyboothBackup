@@ -52,6 +52,9 @@ for ($i = 1; $i <= $argc; $i++) {
     }
 }
 
+/** 
+ * Deprecated in favor of new, faster way of fetching
+
 $pages = $db->getPages();
 
 if (count($pages) == 0) {
@@ -60,7 +63,9 @@ if (count($pages) == 0) {
 }
 
 $pictures = $db->getPictures($pages);
+*/
 
+$pictures = $db->getPicturesFast();
 
 if (count($pictures) == 0) {
     $db->log('Nothing found!', true);
