@@ -41,7 +41,7 @@ class DailyboothBackup {
 
             $content = file_get_contents($url);
 
-            preg_match_all('#/' . $this->username . '/([0-9]+)"><img#isU', $content, $match);
+            preg_match_all('#/' . $this->username . '/([0-9]+)"><div class=\'rounder\'#isU', $content, $match);
 
             $count = count($match[0]);
 
@@ -54,9 +54,10 @@ class DailyboothBackup {
             for ($i = 0; $i < $count; $i++) {
                 $urls[] = $match[1][$i];
             }
+
         }
 
-        $this->log('Got ' . count($urls) . ' pages.');
+        $this->log('Got ' . count($urls) . ' picture pages.');
 
         return $urls;
     }
@@ -75,9 +76,9 @@ class DailyboothBackup {
 
             $content = file_get_contents($url);
 
-            preg_match('#<div id="picture"><img src="(.*)" alt="(.*)" />#isU', $content, $match);
+            preg_match('#<img id="main_picture" src="(.*)" />#isU', $content, $match);
 
-            $large[$match[2]] = $match[1];
+            $large[] = $match[1];
 
             $this->log('Found one: ' . $match[1]);
         }
@@ -130,8 +131,8 @@ class DailyboothBackup {
         $this->verbose = (bool) $verbose;
     }
 
-    private function log($str, $force = false) {
-        if ($this->verbose !== false && $force !== false) {
+    public function log($str, $force = false) {
+        if ($this->verbose == true || $force == true) {
             echo $str . "\n";
         }
     }
